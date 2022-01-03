@@ -103,18 +103,6 @@ export const NFT = () => {
       >
       test metaplex 
       </button>
-      <button
-        onClick={test}
-        className="py-2 px-4 border border-purple-700 rounded-md text-sm font-medium text-purple-700 whitespace-nowrap hover:bg-purple-200"
-      >
-      fractionalize NFT
-      </button>
-      <button
-        onClick={test}
-        className="py-2 px-4 border border-purple-700 rounded-md text-sm font-medium text-purple-700 whitespace-nowrap hover:bg-purple-200"
-      >
-      reverse fractionalization
-      </button>
     </>
   );
 }
