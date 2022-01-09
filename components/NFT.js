@@ -87,7 +87,7 @@ export const NFT = () => {
     const metadataAddress = mintNFT(
       connection,
       window.solana.publicKey,
-      'https://arweave.net/nhjGl6alIKUbS9MmkYRCaf1MjjTtDEGtuSF42gaIW7k',
+      'http://localhost:5555/metadata',
       false,
     );
 

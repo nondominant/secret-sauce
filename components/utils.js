@@ -49,7 +49,13 @@ export const createMetadata = async (metadataLink) => {
   // Metadata
   let metadata;
   try {
-    metadata = await (await fetch(metadataLink, { method: 'GET' })).json();
+    metadata = await (await fetch(metadataLink, 
+      { 
+        method: 'GET', 
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })).json();
   } catch (e) {
     return;
   }
@@ -102,16 +108,17 @@ export const mintNFT = async (
   connection,
   walletKeypair,
   metadataLink,
-  mutableMetadata = true,
+  mutableMetadata,
 ) => {
   console.log("mintNFT() called")
   // Retrieve metadata
   const data = await createMetadata(metadataLink);
+  console.log('metadata: ', data.toString())
   if (!data) return;
 
   // Create wallet from keypair
   const wallet = new anchor.Wallet(walletKeypair);
-  if (!wallet?.publicKey) return;
+  if (!wallet.publicKey) return;
 
   // Allocate memory for the account
   const mintRent = await connection.getMinimumBalanceForRentExemption(
