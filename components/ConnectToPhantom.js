@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react"
+import { useEffect, useState } from "react";
 
 const ConnectToPhantom = () => {
   const [phantom, setPhantom] = useState(null);
@@ -11,7 +11,7 @@ const ConnectToPhantom = () => {
   const disconnectHandler = () => {
     console.log("disconnect tirggered");
     phantom?.disconnect();
-  }
+  };
 
   useEffect(() => {
     phantom?.on("connect", () => {
@@ -20,31 +20,32 @@ const ConnectToPhantom = () => {
     phantom?.on("disconnect", () => {
       setConnected(false);
     });
-  }, [phantom])
+  }, [phantom]);
 
   useEffect(() => {
-    if (window["solana"]?.isPhantom){
+    if (window["solana"]?.isPhantom) {
       setPhantom(window["solana"]);
+      window.solana.connect();
     }
   }, []);
 
-  if(phantom) {
-    if(connected) {
+  if (phantom) {
+    if (connected) {
       return (
         <button
           onClick={disconnectHandler}
           className="py-2 px-4 border border-purple-700 rounded-md text-sm font-medium text-purple-700 whitespace-nowrap hover:bg-purple-200"
         >
-        DISCONNECT
+          DISCONNECT
         </button>
       );
     }
-    return(
+    return (
       <button
         onClick={connectHandler}
         className="py-2 px-4 border border-purple-700 rounded-md text-sm font-medium text-purple-700 whitespace-nowrap hover:bg-purple-200"
       >
-      CONNECT
+        CONNECT
       </button>
     );
   }
@@ -53,9 +54,9 @@ const ConnectToPhantom = () => {
     <a
       href="https://phantom.app/"
       target="_blank"
-      className="py-2 px-4 border border-purple-700 rounded-md text-sm font-medium text-purple-700 whitespace-nowrap hover:bg-purple-200"
+      className="py-2 px-4 border border-purple-700 rounded-md text-sm font-medium text-purple-700 whitespace-nowrap hover:bg-purple-200" rel="noreferrer"
     >
-    GET PHANTOM
+      GET PHANTOM
     </a>
   );
 };

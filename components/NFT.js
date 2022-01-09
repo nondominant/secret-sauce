@@ -1,24 +1,20 @@
-import * as web3 from '@solana/web3.js';
-import * as splToken from '@solana/spl-token';
-import { mintNFT } from './utils';
+import * as web3 from "@solana/web3.js";
+import * as splToken from "@solana/spl-token";
+import { mintNFT } from "./utils";
 
 export const NFT = () => {
-
-  const connection = new web3.Connection(
-    'http://127.0.0.1:8899',
-    'confirmed',
-  );
+  const connection = new web3.Connection("http://192.168.1.97:8899", "confirmed");
+  //window.solana.connect();
 
   const generateWallet = async () => {
     let newWallet = web3.Keypair.generate();
     let newAirdropSignature = await connection.requestAirdrop(
       newWallet.publicKey,
-      web3.LAMPORTS_PER_SOL,
+      web3.LAMPORTS_PER_SOL
     );
     await connection.confirmTransaction(newAirdropSignature);
     return newWallet;
-  }
-
+  };
 
   const printAccountInfo = (info) => {
     console.log("{");
@@ -26,8 +22,7 @@ export const NFT = () => {
     console.log("owner:", info.owner.toString());
     console.log("tokens:", info.amount.toString());
     console.log("}");
-  }
-
+  };
 
   const generateMint = async (authorityWallet) => {
     const mint = await splToken.Token.createMint(
@@ -36,20 +31,17 @@ export const NFT = () => {
       authorityWallet.publicKey,
       authorityWallet.publicKey,
       0,
-      splToken.TOKEN_PROGRAM_ID,
+      splToken.TOKEN_PROGRAM_ID
     );
     return mint;
-  }
-
+  };
 
   const test = async () => {
     console.log("start");
     let temp = await generateWallet();
-    console.log(temp.publicKey.toString())
+    console.log(temp.publicKey.toString());
     let tempMint = await generateMint(temp);
-    let assoc = await tempMint.getOrCreateAssociatedAccountInfo(
-      temp.publicKey,
-    );
+    let assoc = await tempMint.getOrCreateAssociatedAccountInfo(temp.publicKey);
     let info = await tempMint.getAccountInfo(assoc.address);
     printAccountInfo(info);
     const promise = new Promise((resolve, reject) => {
@@ -57,22 +49,21 @@ export const NFT = () => {
         resolve(window.solana.publicKey.toString());
       }, 2000);
     });
-    promise.then(val => {
+    promise.then((val) => {
       console.log(val);
     });
-    console.log("middle")
-  }
-
+    console.log("middle");
+  };
 
   const testmetaplex = async () => {
     const key = window.solana.publicKey.toBase58();
     const metadata = {
-      name: 'Page',
-      symbol: '',
+      name: "Page",
+      symbol: "",
       description: "AB AETERNO",
-      external_url: '',
-      image: 'https://arweave.net/nhjGl6alIKUbS9MmkYRCaf1MjjTtDEGtuSF42gaIW7k',
-      attributes: '',
+      external_url: "",
+      image: "https://arweave.net/nhjGl6alIKUbS9MmkYRCaf1MjjTtDEGtuSF42gaIW7k",
+      attributes: "",
       seller_fee_basis_points: 0,
       creators: [
         {
@@ -87,13 +78,12 @@ export const NFT = () => {
     const metadataAddress = mintNFT(
       connection,
       window.solana.publicKey,
-      'http://localhost:5555/metadata',
-      false,
+      "http://localhost:5555/metadata",
+      (i) => console.log
     );
 
-    return metadataAddress
-  }
-
+    return metadataAddress;
+  };
 
   return (
     <>
@@ -101,10 +91,10 @@ export const NFT = () => {
         onClick={testmetaplex}
         className="py-2 px-4 border border-purple-700 rounded-md text-sm font-medium text-purple-700 whitespace-nowrap hover:bg-purple-200"
       >
-      test metaplex 
+        test metaplex
       </button>
     </>
   );
-}
+};
 
 export default NFT;
