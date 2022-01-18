@@ -48,6 +48,7 @@ import {
 export const createMetadata = async (metadataLink) => {
   console.log("createMetadata() called");
   // Metadata
+<<<<<<< Updated upstream
   let metadata;
   try {
     metadata = await (
@@ -100,6 +101,31 @@ export const createMetadata = async (metadataLink) => {
     sellerFeeBasisPoints: metadata.seller_fee_basis_points,
     creators: creators,
   });
+=======
+  const data = await fetch(metadataLink, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      // Validate metadata
+
+      // Validate creators
+
+      console.log("metadata created successfully");
+      return new Data({
+        symbol: data.symbol,
+        name: data.name,
+        uri: metadataLink,
+        sellerFeeBasisPoints: data.seller_fee_basis_points,
+        creators: data.properties.creators,
+      });
+    });
+  return data;
+>>>>>>> Stashed changes
 };
 
 //============================================================================

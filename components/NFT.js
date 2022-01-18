@@ -79,7 +79,12 @@ export const NFT = () => {
     const metadataAddress = mintNFT(
       connection,
       wallet,
+<<<<<<< Updated upstream
       "http://localhost:5555/metadata"
+=======
+      "",
+      "http://localhost:3003/metadata"
+>>>>>>> Stashed changes
     );
 
     return metadataAddress;
