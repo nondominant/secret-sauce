@@ -23,10 +23,10 @@ export default function Home() {
     <ConnectionProvider endpoint="http://localhost:8899">
       <WalletProvider wallets={wallets}>
         <WalletModalProvider>
-          <WalletMultiButton />
-          <WalletDisconnectButton />
           <div className="h-screen flex items-center justify-center">
-            <ConnectToPhantom />
+            <WalletMultiButton />
+            <WalletDisconnectButton />
+            {/*<ConnectToPhantom /> */}
             <NFT />
           </div>
         </WalletModalProvider>
