@@ -3,7 +3,7 @@ import * as splToken from "@solana/spl-token";
 import { mintNFT } from "./utils";
 
 export const NFT = () => {
-  const connection = new web3.Connection("http://192.168.1.97:8899", "confirmed");
+  const connection = new web3.Connection("http://localhost:8899", "confirmed");
   //window.solana.connect();
 
   const generateWallet = async () => {
@@ -74,12 +74,12 @@ export const NFT = () => {
       ],
       properties: {},
     };
+    let wallet = await generateWallet();
 
     const metadataAddress = mintNFT(
       connection,
-      window.solana.publicKey,
-      "http://localhost:5555/metadata",
-      (i) => console.log
+      wallet,
+      "http://localhost:5555/metadata"
     );
 
     return metadataAddress;

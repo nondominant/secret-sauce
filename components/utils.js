@@ -1,3 +1,4 @@
+import {useWallet} from '@solana/wallet-adapter-react';
 import {
   createAssociatedTokenAccountInstruction,
   createMetadataInstruction,
@@ -61,6 +62,7 @@ export const createMetadata = async (metadataLink) => {
     return;
   }
 
+  console.log("validating metadata")
   // Validate metadata
   if (
     !metadata.name ||
@@ -72,6 +74,7 @@ export const createMetadata = async (metadataLink) => {
     return;
   }
 
+  console.log("validating creators");
   // Validate creators
   const metaCreators = metadata.properties.creators;
   if (
@@ -80,7 +83,6 @@ export const createMetadata = async (metadataLink) => {
   ) {
     return;
   }
-
   const creators = metaCreators.map(
     (creator) =>
       new Creator({
