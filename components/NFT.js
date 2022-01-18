@@ -83,8 +83,8 @@ export const NFT = () => {
     const metadataAddress = mintNFT(
       connection,
       wallet,
-      "http://localhost:5555/metadata",
-      (i) => console.log
+      "",
+      "http://localhost:4000/"
     );
 
     return metadataAddress;

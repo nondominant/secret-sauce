@@ -47,57 +47,62 @@ import {
 export const createMetadata = async (metadataLink) => {
   console.log("createMetadata() called");
   // Metadata
-  let metadata;
-  try {
-    metadata = await (
-      await fetch(metadataLink, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-    ).json();
-  } catch (e) {
-    return;
-  }
+  const data = await fetch(metadataLink, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => response.json())
+    .then((metadata) => {
+      console.log(metadata);
+      // Validate metadata
+      if (
+        !metadata.name ||
+        !metadata.image ||
+        isNaN(metadata.seller_fee_basis_points) ||
+        !metadata.properties ||
+        !Array.isArray(metadata.properties.creators)
+      ) {
+        console.log(
+          "invalid metadata",
+          metadata.name,
+          metadata.image,
+          isNaN(metadata.seller_fee_basis_points),
+          metadata.properties,
+          Array.isArray(metadata.properties.creators)
+        );
+        return;
+      }
 
-  // Validate metadata
-  if (
-    !metadata.name ||
-    !metadata.image ||
-    isNaN(metadata.seller_fee_basis_points) ||
-    !metadata.properties ||
-    !Array.isArray(metadata.properties.creators)
-  ) {
-    return;
-  }
+      // Validate creators
+      const metaCreators = metadata.properties.creators;
+      if (
+        metaCreators.some((creator) => !creator.address) ||
+        metaCreators.reduce((sum, creator) => creator.share + sum, 0) !== 100
+      ) {
+        return;
+      }
 
-  // Validate creators
-  const metaCreators = metadata.properties.creators;
-  if (
-    metaCreators.some((creator) => !creator.address) ||
-    metaCreators.reduce((sum, creator) => creator.share + sum, 0) !== 100
-  ) {
-    return;
-  }
+      const creators = metaCreators.map(
+        (creator) =>
+          new Creator({
+            address: creator.address,
+            share: creator.share,
+            verified: 1,
+          })
+      );
 
-  const creators = metaCreators.map(
-    (creator) =>
-      new Creator({
-        address: creator.address,
-        share: creator.share,
-        verified: 1,
-      })
-  );
-
-  console.log("metadata created successfully");
-  return new Data({
-    symbol: metadata.symbol,
-    name: metadata.name,
-    uri: metadataLink,
-    sellerFeeBasisPoints: metadata.seller_fee_basis_points,
-    creators: creators,
-  });
+      console.log("metadata created successfully");
+      return new Data({
+        symbol: metadata.symbol,
+        name: metadata.name,
+        uri: metadataLink,
+        sellerFeeBasisPoints: metadata.seller_fee_basis_points,
+        creators: creators,
+      });
+    });
+  return data;
 };
 
 //============================================================================
@@ -116,7 +121,7 @@ export const mintNFT = async (
   if (!wallet?.publicKey) return;
   console.log("test");
   const metadata = await createMetadata(metadataLink);
-
+  console.log("metadata", metadata);
   const metadataContent = {
     name: metadata.name,
     symbol: metadata.symbol,
@@ -136,7 +141,7 @@ export const mintNFT = async (
       }),
     },
   };
-
+  console.log(metadataContent);
   const realFiles = [
     new File([JSON.stringify(metadataContent)], RESERVED_METADATA),
   ];
@@ -501,7 +506,7 @@ export const mintNFT2 = async (
       wallet.publicKey,
       txnData
     )
-  ); 
+  );
 
   const res = await sendTransactionWithRetryWithKeypair(
     connection,
