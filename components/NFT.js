@@ -1,11 +1,14 @@
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
 import { mintNFT } from "./utils";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
 export const NFT = () => {
-  const connection = new web3.Connection("http://192.168.1.97:8899", "confirmed");
-  //window.solana.connect();
+  const connection = useConnection();
 
+  console.log(connection);
+
+  const wallet = useWallet();
   const generateWallet = async () => {
     let newWallet = web3.Keypair.generate();
     let newAirdropSignature = await connection.requestAirdrop(
@@ -75,9 +78,11 @@ export const NFT = () => {
       properties: {},
     };
 
+    console.log("useWallet:", wallet);
+
     const metadataAddress = mintNFT(
       connection,
-      window.solana.publicKey,
+      wallet,
       "http://localhost:5555/metadata",
       (i) => console.log
     );
