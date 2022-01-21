@@ -1,3 +1,5 @@
+import { AccountLayout, MintLayout, Token } from '@solana/spl-token';
+
 import {
   SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
@@ -5,7 +7,9 @@ import {
 } from './constants';
 
 import {
-  PublicKey
+  PublicKey,
+  Keypair,
+  SystemProgram,
 } from '@solana/web3.js';
 
 export const getTokenWallet = async function (
@@ -21,6 +25,56 @@ export const getTokenWallet = async function (
   )[0];
 };
 
+export function createUninitializedMint(
+  instructions,
+  payer,
+  amount,
+  signers,
+) {
+  const account = Keypair.generate();
+  instructions.push(
+    SystemProgram.createAccount({
+      fromPubkey: payer,
+      newAccountPubkey: account.publicKey,
+      lamports: amount,
+      space: MintLayout.span,
+      programId: TOKEN_PROGRAM_ID,
+    }),
+  );
+
+  signers.push(account);
+
+  return account.publicKey;
+}
+
+export function createMint(
+  instructions,
+  payer,
+  mintRentExempt,
+  decimals,
+  owner,
+  freezeAuthority,
+  signers,
+) {
+  const account = createUninitializedMint(
+    instructions,
+    payer,
+    mintRentExempt,
+    signers,
+  );
+
+  instructions.push(
+    Token.createInitMintInstruction(
+      TOKEN_PROGRAM_ID,
+      account,
+      decimals,
+      owner,
+      freezeAuthority,
+    ),
+  );
+
+  return account;
+}
 
 export const getMetadata = async (
   mint,

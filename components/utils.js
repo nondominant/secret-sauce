@@ -9,10 +9,13 @@ import {
 
 import { sendTransactionWithRetryWithKeypair } from "./helpers/transactions";
 
+import crypto from 'crypto';
+
 import {
   getTokenWallet,
   getMetadata,
   getMasterEdition,
+  createMint,
 } from "./helpers/accounts";
 
 import * as anchor from "@project-serum/anchor";
@@ -121,7 +124,6 @@ export const mintNFT = async (
   const { instructions: pushInstructions, signers: pushSigners } =
     await prepPayForFilesTxn(wallet, realFiles, metadata);
 
-  progressCallback(1);
 
   // Allocate memory for the account
   const mintRent = await connection.getMinimumBalanceForRentExemption(
@@ -184,7 +186,6 @@ export const mintNFT = async (
     instructions,
     wallet.publicKey.toBase58()
   );
-  progressCallback(2);
 
   // TODO: enable when using payer account to avoid 2nd popup
   // const block = await connection.getRecentBlockhash('singleGossip');
@@ -203,11 +204,9 @@ export const mintNFT = async (
     signers,
     "single"
   );
-  progressCallback(3);
 
   try {
     await connection.confirmTransaction(txid, "max");
-    progressCallback(4);
   } catch {
     // ignore
   }
@@ -216,7 +215,6 @@ export const mintNFT = async (
   // await connection.confirmTransaction(txid, 'max');
   await connection.getParsedConfirmedTransaction(txid, "confirmed");
 
-  progressCallback(5);
 
   // this means we're done getting AR txn setup. Ship it off to ARWeave!
   const data = new FormData();
@@ -233,7 +231,6 @@ export const mintNFT = async (
   // TODO: convert to absolute file name for image
 
   const result = await uploadToArweave(metadata);
-  progressCallback(6);
 
   const metadataFile = result.messages?.find(
     (m) => m.filename === RESERVED_TXN_MANIFEST
@@ -271,7 +268,6 @@ export const mintNFT = async (
       )
     );
 
-    progressCallback(7);
     // // In this instruction, mint authority will be removed from the main mint, while
     // // minting authority will be maintained for the Printing mint (which we want.)
     await createMasterEdition(
@@ -303,7 +299,6 @@ export const mintNFT = async (
     //   updateInstructions,
     // );
 
-    progressCallback(8);
 
     const txid = await sendTransactionWithRetry(
       connection,
