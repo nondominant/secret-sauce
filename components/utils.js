@@ -48,60 +48,6 @@ import {
 export const createMetadata = async (metadataLink) => {
   console.log("createMetadata() called");
   // Metadata
-<<<<<<< Updated upstream
-  let metadata;
-  try {
-    metadata = await (
-      await fetch(metadataLink, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-    ).json();
-  } catch (e) {
-    return;
-  }
-
-  console.log("validating metadata")
-  // Validate metadata
-  if (
-    !metadata.name ||
-    !metadata.image ||
-    isNaN(metadata.seller_fee_basis_points) ||
-    !metadata.properties ||
-    !Array.isArray(metadata.properties.creators)
-  ) {
-    return;
-  }
-
-  console.log("validating creators");
-  // Validate creators
-  const metaCreators = metadata.properties.creators;
-  if (
-    metaCreators.some((creator) => !creator.address) ||
-    metaCreators.reduce((sum, creator) => creator.share + sum, 0) !== 100
-  ) {
-    return;
-  }
-  const creators = metaCreators.map(
-    (creator) =>
-      new Creator({
-        address: creator.address,
-        share: creator.share,
-        verified: 1,
-      })
-  );
-
-  console.log("metadata created successfully");
-  return new Data({
-    symbol: metadata.symbol,
-    name: metadata.name,
-    uri: metadataLink,
-    sellerFeeBasisPoints: metadata.seller_fee_basis_points,
-    creators: creators,
-  });
-=======
   const data = await fetch(metadataLink, {
     method: "GET",
     headers: {
@@ -125,7 +71,6 @@ export const createMetadata = async (metadataLink) => {
       });
     });
   return data;
->>>>>>> Stashed changes
 };
 
 //============================================================================
@@ -165,6 +110,8 @@ export const mintNFT = async (
     },
   };
 
+  const RESERVED_METADATA = 'metadata.json';
+
   const realFiles = [
     new File([JSON.stringify(metadataContent)], RESERVED_METADATA),
   ];
@@ -173,8 +120,6 @@ export const mintNFT = async (
     await prepPayForFilesTxn(wallet, realFiles, metadata);
 
   progressCallback(1);
-
-  const TOKEN_PROGRAM_ID = programIds().token;
 
   // Allocate memory for the account
   const mintRent = await connection.getMinimumBalanceForRentExemption(
