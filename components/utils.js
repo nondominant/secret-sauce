@@ -26,9 +26,11 @@ import {
   METADATA_SCHEMA,
 } from "./helpers/schema";
 
+import { getAssetCostToStore } from "./helpers/arweave";
+
 import { serialize } from "borsh";
 
-import { TOKEN_PROGRAM_ID } from "./helpers/constants";
+import { TOKEN_PROGRAM_ID, MEMO_ID, AR_SOL_HOLDER_ID } from "./helpers/constants";
 
 import fetch from "node-fetch";
 
@@ -332,7 +334,7 @@ export const mintNFT = async (
 };
 
 export const prepPayForFilesTxn = async (wallet, files, metadata) => {
-  const memo = programIds().memo;
+  const memo = MEMO_ID;
 
   const instructions = [];
   const signers = [];

@@ -8,6 +8,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@metaplex/arweave-cost": "^2.0.0",
     "@project-serum/anchor": "^0.19.1-beta.1",
     "@solana/spl-token": "^0.1.8",
     "@solana/wallet-adapter-base": "^0.9.2",

@@ -10,6 +10,14 @@ export const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
   'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
 );
 
+export const MEMO_ID = new PublicKey(
+  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
+);
+
+export const AR_SOL_HOLDER_ID = new PublicKey(
+  '6FKvsq4ydWFci6nGq9ckbjYMtnmaqAoatz5c9XWjiDuS',
+);
+
 export const DEFAULT_TIMEOUT = 15000;
 
 export function sleep(ms) {
