@@ -74,6 +74,8 @@ export const NFT = () => {
       ],
       properties: {},
     };
+
+
     let wallet = await generateWallet();
 
     const metadataAddress = mintNFT(

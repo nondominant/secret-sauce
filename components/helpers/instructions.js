@@ -13,6 +13,7 @@ import {
     
 
 export function createAssociatedTokenAccountInstruction(
+  instructions,
   associatedTokenAddress, //publicKey
   payer, //publicKey
   walletAddress,//publicKey
@@ -56,11 +57,12 @@ export function createAssociatedTokenAccountInstruction(
       isWritable: false,
     },
   ];
-  return new TransactionInstruction({
+  console.log("createAssociatedTokenAccountInstruction() finished")
+  instructions.push(new TransactionInstruction({
     keys,
     programId: SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
     data: Buffer.from([]),
-  });
+  }),)
 }
 
 

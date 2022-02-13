@@ -16,6 +16,52 @@ import { getUnixTs, sleep } from './constants';
 
 import { DEFAULT_TIMEOUT } from './constants';
 
+export const sendTransactionWithRetry = async (
+  connection,
+  wallet,
+  instructions,
+  signers,
+  commitment,
+  includesFeePayer,
+  block ,
+  beforeSend,
+) => {
+  if (!wallet.publicKey) throw new WalletNotConnectedError();
+
+  let transaction = new Transaction();
+  instructions.forEach(instruction => transaction.add(instruction));
+  transaction.recentBlockhash = (
+    block || (await connection.getRecentBlockhash(commitment))
+  ).blockhash;
+
+  if (includesFeePayer) {
+    transaction.setSigners(...signers.map(s => s.publicKey));
+  } else {
+    transaction.setSigners(
+      // fee payed by the wallet owner
+      wallet.publicKey,
+      ...signers.map(s => s.publicKey),
+    );
+  }
+
+  if (signers.length > 0) {
+    transaction.partialSign(...signers);
+  }
+  if (!includesFeePayer) {
+    transaction = await wallet.signTransaction(transaction);
+  }
+
+  if (beforeSend) {
+    beforeSend();
+  }
+
+  const { txid, slot } = await sendSignedTransaction({
+    connection,
+    signedTransaction: transaction,
+  });
+
+  return { txid, slot };
+};
 
 export const sendTransactionWithRetryWithKeypair = async (
   connection,

@@ -25,6 +25,20 @@ export const getTokenWallet = async function (
   )[0];
 };
 
+const PubKeysInternedMap = new Map();
+
+export const toPublicKey = (key) => {
+  if (typeof key !== 'string') {
+    return key;
+  }
+  let result = PubKeysInternedMap.get(key);
+  if (!result) {
+    result = new PublicKey(key);
+    PubKeysInternedMap.set(key, result);
+  }
+  return result;
+};
+
 export function createUninitializedMint(
   instructions,
   payer,

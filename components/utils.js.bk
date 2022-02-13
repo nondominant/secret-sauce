@@ -1,3 +1,4 @@
+import {useWallet} from '@solana/wallet-adapter-react';
 import {
   createAssociatedTokenAccountInstruction,
   createMetadataInstruction,
@@ -5,8 +6,6 @@ import {
 
   ////  createUpdateMetadataInstruction,
 } from "./helpers/instructions";
-
-import * as splToken from '@solana/spl-token';
 
 import { 
   sendTransactionWithRetryWithKeypair,
@@ -108,8 +107,8 @@ export const mintNFT = async (
   progressCallback,
   maxSupply
 ) => {
-  console.log(window.solana);
-  if (!window.solana?.publicKey) return;
+  console.log(wallet);
+  if (!wallet?.publicKey) return;
   console.log("test");
   const metadata = await createMetadata(metadataLink);
 
@@ -140,7 +139,7 @@ export const mintNFT = async (
   ];
 
   const { instructions: pushInstructions, signers: pushSigners } =
-    await prepPayForFilesTxn(window.solana, realFiles, metadata);
+    await prepPayForFilesTxn(wallet, realFiles, metadata);
 
 
   // Allocate memory for the account
@@ -155,14 +154,14 @@ export const mintNFT = async (
   // twice post Arweave. We store in an account (payer) and use it post-Arweave to update MD with new link
   // then give control back to the user.
   // const payer = new Account();
-  const payerPublicKey = window.solana.publicKey.toBase58();
+  const payerPublicKey = wallet.publicKey.toBase58();
   const instructions = [...pushInstructions];
   const signers = [...pushSigners];
 
-  // This is only temporarily owned by window.solana...transferred to program by createMasterEdition below
+  // This is only temporarily owned by wallet...transferred to program by createMasterEdition below
   const mintKey = createMint(
     instructions,
-    window.solana.publicKey,
+    wallet.publicKey,
     mintRent,
     0,
     // Some weird bug with phantom where it's public key doesnt mesh with data encode wellff
@@ -174,7 +173,7 @@ export const mintNFT = async (
   const recipientKey = (
     await findProgramAddress(
       [
-        window.solana.publicKey.toBuffer(),
+        wallet.publicKey.toBuffer(),
         TOKEN_PROGRAM_ID.toBuffer(),
         toPublicKey(mintKey).toBuffer(),
       ],
@@ -186,14 +185,14 @@ export const mintNFT = async (
   console.log("instructions BEFORE pushing createAssociatedTokenAccountInstruction", instructions);
   console.log("parameters : ");
    console.log(">recipient", toPublicKey(recipientKey));
-   console.log(">window.solana", window.solana.publicKey);
-   console.log(">window.solana again", window.solana.publicKey)
+   console.log(">wallet", wallet.publicKey);
+   console.log(">wallet again", wallet.publicKey)
    console.log(">mintKey", toPublicKey(mintKey));
   createAssociatedTokenAccountInstruction(
     instructions,
     toPublicKey(recipientKey),
-    window.solana.publicKey,
-    window.solana.publicKey,
+    wallet.publicKey,
+    wallet.publicKey,
     toPublicKey(mintKey)
   );
   console.log("instructions AFTER pushing createAssociatedTokenAccountInstruction", instructions);
@@ -201,29 +200,28 @@ export const mintNFT = async (
   //what kind of account is being created ... where is it being created?
   console.log("about to create metadata account")
   console.log("metadata.creators", metadata.creators);
-  let singleCreator = metadata.creators;
   //PETER===========NEEDS BUG FIX METADATA.CREATORS.CREATORS.CREATORS
-  const metadataAccount = await createMetadataAccount(
-    new Data({
-      symbol: metadata.symbol,
-      name: metadata.name,
-      uri: " ".repeat(64), // size of url for arweave
-      sellerFeeBasisPoints: metadata.sellerFeeBasisPoints,
-      creators: singleCreator,
-    }),
-    payerPublicKey,
-    mintKey,
-    payerPublicKey,
-    instructions,
-    window.solana.publicKey.toBase58()
-  );
+  //const metadataAccount = await createMetadataAccount(
+  //  new Data({
+  //    symbol: metadata.symbol,
+  //    name: metadata.name,
+  //    uri: " ".repeat(64), // size of url for arweave
+  //    sellerFeeBasisPoints: metadata.sellerFeeBasisPoints,
+  //    creators: metadata.creators,
+  //  }),
+  //  payerPublicKey,
+  //  mintKey,
+  //  payerPublicKey,
+  //  instructions,
+  //  wallet.publicKey.toBase58()
+  //);
   //PETER===========NEEDS BUG FIX METADATA.CREATORS.CREATORS.CREATORS
 
   // TODO: enable when using payer account to avoid 2nd popup
   // const block = await connection.getRecentBlockhash('singleGossip');
   // instructions.push(
   //   SystemProgram.transfer({
-  //     fromPubkey: window.solana.publicKey,
+  //     fromPubkey: wallet.publicKey,
   //     toPubkey: payerPublicKey,
   //     lamports: 0.5 * LAMPORTS_PER_SOL // block.feeCalculator.lamportsPerSignature * 3 + mintRent, // TODO
   //   }),
@@ -244,25 +242,14 @@ export const mintNFT = async (
   transaction.feePayer = payerPublicKey;                        
   let blockhashObj2 = await connection.getRecentBlockhash(); 
   transaction.recentBlockhash = await blockhashObj2.blockhash;
-  console.log("transaction.recentblockhash : ", transaction.recentBlockhash)
-
-  connection.getBalance(window.solana.publicKey).then(function(value) { console.log('balance of account ',value); })
-
-  let Airdrop = await connection.requestAirdrop(
-    window.solana.publicKey,
-    1000000,
-  );
-  let message = await connection.confirmTransaction(Airdrop)
-  console.log("airdrop ", message)
-
-  let test = new Transaction();
-  test.recentBlockhash = await blockhashObj2.blockhash;
-  test.feePayer = window.solana.publicKey;
-  let signed = await window.solana.signTransaction(test);               
+  console.log("wallet : ", wallet)
+  console.log("> wallet public key : ", wallet.publicKey)
+  console.log("window.solana", window.solana.publicKey)
+  let signed = await window.solana.signTransaction(transaction);               
     // The signature is generated 
   const sig2 = await connection.sendRawTransaction(signed.serialize());                      
 
-//let signed3 = signTransaction(transaction, window.solana, accountId, 'testnet');
+let signed3 = signTransaction(transaction, wallet, accountId, 'testnet');
 //==============================================
   const signature = await sendAndConfirmTransaction(
     connection,
@@ -274,7 +261,7 @@ export const mintNFT = async (
   //PETER================replaced with sendAndConfirmTransaction
 //  const { txid } = await sendTransactionWithRetry(
 //    connection,
-//    window.solana,
+//    wallet,
 //    instructions,
 //    signers,
 //    "single"
@@ -311,7 +298,7 @@ export const mintNFT = async (
   const metadataFile = result.messages?.find(
     (m) => m.filename === RESERVED_TXN_MANIFEST
   );
-  if (metadataFile?.transactionId && window.solana.publicKey) {
+  if (metadataFile?.transactionId && wallet.publicKey) {
     const updateInstructions = [];
     const updateSigners = [];
 
@@ -361,7 +348,7 @@ export const mintNFT = async (
         setAuthority({
           target: authTokenAccount,
           currentAuthority: payerPublicKey,
-          newAuthority: window.solana.publicKey,
+          newAuthority: wallet.publicKey,
           authorityType: 'AccountOwner',
         }),
       );
@@ -371,14 +358,14 @@ export const mintNFT = async (
     // await transferUpdateAuthority(
     //   metadataAccount,
     //   payerPublicKey,
-    //   window.solana.publicKey,
+    //   wallet.publicKey,
     //   updateInstructions,
     // );
 
 
     const txid = await sendTransactionWithRetry(
       connection,
-      window.solana,
+      wallet,
       updateInstructions,
       updateSigners
     );
@@ -460,7 +447,7 @@ export const mintNFT2 = async (
 
   // Create wallet from keypair
   console.log(anchor);
-  const wallet = new anchor.Nodewallet(walletKeypair);
+  const wallet = new anchor.NodeWallet(walletKeypair);
   if (!wallet.publicKey) return;
 
   // Allocate memory for the account
@@ -492,7 +479,7 @@ export const mintNFT2 = async (
     )
   );
 
-  const userTokenAccoutAddress = await getTokenwallet(
+  const userTokenAccoutAddress = await getTokenWallet(
     wallet.publicKey,
     mint.publicKey
   );
@@ -505,7 +492,6 @@ export const mintNFT2 = async (
     )
   );
 
-  console.log("data parameter passed to CreateMetadataArgs", data)
   // Create metadata
   const metadataAccount = await getMetadata(mint.publicKey);
   let txnData = Buffer.from(
