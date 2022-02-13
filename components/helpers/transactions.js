@@ -10,54 +10,52 @@ import {
   Transaction,
   TransactionInstruction,
   TransactionSignature,
-} from '@solana/web3.js';
+} from "@solana/web3.js";
 
-import { getUnixTs, sleep } from './constants';
+import { getUnixTs, sleep } from "./constants";
 
-import { DEFAULT_TIMEOUT } from './constants';
-
+import { DEFAULT_TIMEOUT } from "./constants";
 
 export const sendTransactionWithRetryWithKeypair = async (
   connection,
   wallet,
   instructions,
   signers,
-  commitment = 'singleGossip',
+  commitment = "singleGossip",
   includesFeePayer,
-  beforeSend,//set to either false, or a callback function
+  beforeSend //set to either false, or a callback function
 ) => {
-  console.log("sendTransactionWithRetryWithKeypair() called")
+  console.log("sendTransactionWithRetryWithKeypair() called");
+  const con = connection.connection;
   const transaction = new Transaction();
-  instructions.forEach(instruction => transaction.add(instruction));
+  instructions.forEach((instruction) => transaction.add(instruction));
   transaction.recentBlockhash = (
-    //todo remove || statement
-    block || (await connection.getRecentBlockhash(commitment))
+    await con.getRecentBlockhash(commitment)  
   ).blockhash;
 
   if (includesFeePayer) {
-    transaction.setSigners(...signers.map(s => s.publicKey));
+    transaction.setSigners(...signers.map((s) => s.publicKey));
   } else {
     transaction.setSigners(
       // fee payed by the wallet owner
       wallet.publicKey,
-      ...signers.map(s => s.publicKey),
+      ...signers.map((s) => s.publicKey)
     );
   }
 
   if (signers.length > 0) {
-    transaction.sign(...[wallet, ...signers]);
+    wallet.signTransaction(transaction);
   } else {
-    transaction.sign(wallet);
+    wallet.signTransaction(transaction);
   }
 
   if (beforeSend) {
     beforeSend();
   }
 
-  const { txid, slot } = await sendSignedTransaction({
-    connection,
-    signedTransaction: transaction,
-  });
+  console.log(wallet);
+
+  const { txid, slot } = await wallet.sendTransaction(transaction, connection);
 
   return { txid, slot };
 };

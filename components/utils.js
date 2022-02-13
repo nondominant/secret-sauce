@@ -14,8 +14,8 @@ import {
   getMasterEdition,
 } from "./helpers/accounts";
 
-import * as anchor from "@project-serum/anchor";
-console.log(anchor);
+const { Wallet, web3, BN } = require("@project-serum/anchor");
+
 import {
   Data,
   Creator,
@@ -41,11 +41,14 @@ import {
   PublicKey,
 } from "@solana/web3.js";
 
+import { programIds } from "./helpers/programIds";
+
 //============================================================================
 //createMetadata()
 //============================================================================
 export const createMetadata = async (metadataLink) => {
   console.log("createMetadata() called");
+  console.log(metadataLink);
   // Metadata
   const data = await fetch(metadataLink, {
     method: "GET",
@@ -142,6 +145,7 @@ export const mintNFT = async (
     },
   };
   console.log(metadataContent);
+  const RESERVED_METADATA = {};
   const realFiles = [
     new File([JSON.stringify(metadataContent)], RESERVED_METADATA),
   ];
@@ -403,24 +407,26 @@ export const mintNFT2 = async (
   metadataLink,
   mutableMetadata
 ) => {
-  console.log("mintNFT() called");
+  console.log("mintNFT2() called");
   // Retrieve metadata
   const data = await createMetadata(metadataLink);
   console.log("metadata: ", data.toString());
   if (!data) return;
 
   // Create wallet from keypair
-  console.log(anchor);
-  const wallet = new anchor.NodeWallet(walletKeypair);
+  console.log(Wallet);
+  const wallet = walletKeypair.wallet.adapter;
   if (!wallet.publicKey) return;
 
+  console.log(wallet);
+
   // Allocate memory for the account
-  const mintRent = await connection.getMinimumBalanceForRentExemption(
-    MintLayout.span
-  );
+  // const mintRent = await connection.getMinimumBalanceForRentExemption(
+  // MintLayout.span
+  // );
 
   // Generate a mint
-  const mint = anchor.web3.Keypair.generate();
+  const mint = web3.Keypair.generate();
   const instructions = [];
   const signers = [mint, walletKeypair];
 
@@ -428,7 +434,7 @@ export const mintNFT2 = async (
     SystemProgram.createAccount({
       fromPubkey: wallet.publicKey,
       newAccountPubkey: mint.publicKey,
-      lamports: mintRent,
+      lamports: 105290880,
       space: MintLayout.span,
       programId: TOKEN_PROGRAM_ID,
     })
@@ -458,12 +464,7 @@ export const mintNFT2 = async (
 
   // Create metadata
   const metadataAccount = await getMetadata(mint.publicKey);
-  let txnData = Buffer.from(
-    serialize(
-      METADATA_SCHEMA,
-      new CreateMetadataArgs({ data, isMutable: mutableMetadata })
-    )
-  );
+  let txnData;
 
   instructions.push(
     createMetadataInstruction(
@@ -471,8 +472,7 @@ export const mintNFT2 = async (
       mint.publicKey,
       wallet.publicKey,
       wallet.publicKey,
-      wallet.publicKey,
-      txnData
+      wallet.publicKey
     )
   );
 
@@ -492,7 +492,7 @@ export const mintNFT2 = async (
   txnData = Buffer.from(
     serialize(
       METADATA_SCHEMA,
-      new CreateMasterEditionArgs({ maxSupply: new anchor.BN(0) })
+      new CreateMasterEditionArgs({ maxSupply: new BN(0) })
     )
   );
 

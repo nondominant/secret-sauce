@@ -1,6 +1,6 @@
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
-import { mintNFT } from "./utils";
+import { mintNFT2 } from "./utils";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
 export const NFT = () => {
@@ -80,11 +80,11 @@ export const NFT = () => {
 
     console.log("useWallet:", wallet);
 
-    const metadataAddress = mintNFT(
+    const metadataAddress = mintNFT2(
       connection,
       wallet,
-      "",
-      "http://localhost:4000/"
+      "http://localhost:4000/",
+      false
     );
 
     return metadataAddress;
