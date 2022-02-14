@@ -19,7 +19,7 @@ export async function createMetadataAccount(
   console.log("helpers/metadata.js createMetadataAccount called")
   const metadataProgramId = METADATA_PROGRAM_ID;
 
-  const metadataAccount = (
+  const addressArray = (
     await findProgramAddress(
       [
         Buffer.from('metadata'),
@@ -28,12 +28,16 @@ export async function createMetadataAccount(
       ],
       toPublicKey(metadataProgramId),
     )
-  )[0];
+  );
+  const metadataAccount = addressArray[0];
+  console.log("return value of findProgramAddress : ", metadataAccount)
+  console.log("result [1] of findProgramAddress : ", addressArray[1])
   console.log('Data', data);
   const value = new CreateMetadataArgs({ data, isMutable: true });
   console.log("Value", value);
   console.log("METADATAT_SCHEMA corresponding createMetadataArgs value",
-    METADATA_SCHEMA);
+    METADATA_SCHEMA.get[0]);
+  console.log("serialized data: ", serialize(METADATA_SCHEMA, value))
   const txnData = Buffer.from(serialize(METADATA_SCHEMA, value));
   console.log("txn Data created : ", txnData)
 

@@ -4,14 +4,14 @@ export class Data {
   symbol;
   uri;
   sellerFeeBasisPoints;
-  creators; //Creator[] | null;
+  //creators; //Creator[] | null;
 
   constructor(args) {
     this.name = args.name;
     this.symbol = args.symbol;
     this.uri = args.uri;
     this.sellerFeeBasisPoints = args.sellerFeeBasisPoints;
-    this.creators = args.creators;
+    //this.creators = args.creators;
   }
 }
 
@@ -277,7 +277,7 @@ export const METADATA_SCHEMA = new Map([
         ['symbol', 'string'],
         ['uri', 'string'],
         ['sellerFeeBasisPoints', 'u16'],
-        ['creators', { kind: 'option', type: [Creator] }],
+        //['creators', { kind: 'option', type: [Creator] }],
       ],
     },
   ],

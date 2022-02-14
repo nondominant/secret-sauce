@@ -155,12 +155,13 @@ export const mintNFT = async (
   // twice post Arweave. We store in an account (payer) and use it post-Arweave to update MD with new link
   // then give control back to the user.
   // const payer = new Account();
+  
   const payerPublicKey = window.solana.publicKey.toBase58();
   const instructions = [...pushInstructions];
   const signers = [...pushSigners];
 
   // This is only temporarily owned by window.solana...transferred to program by createMasterEdition below
-  const mintKey = createMint(
+  const mintKeyString = await createMint(
     instructions,
     window.solana.publicKey,
     mintRent,
@@ -169,7 +170,9 @@ export const mintNFT = async (
     toPublicKey(payerPublicKey),
     toPublicKey(payerPublicKey),
     signers
-  ).toBase58();
+  );
+  const mintKey = mintKeyString.toBase58()
+  console.log("instructions with mint", instructions)
 
   const recipientKey = (
     await findProgramAddress(
@@ -209,7 +212,7 @@ export const mintNFT = async (
       name: metadata.name,
       uri: " ".repeat(64), // size of url for arweave
       sellerFeeBasisPoints: metadata.sellerFeeBasisPoints,
-      creators: singleCreator,
+     // creators: [singleCreator],
     }),
     payerPublicKey,
     mintKey,
@@ -232,9 +235,11 @@ export const mintNFT = async (
 
   const transaction = new Transaction();
   console.log("instructions : ", instructions);
-  for (let i = 0; i < instructions.length - 1; i++) {
-    transaction.add(instructions[i]);
-  }
+ // for (let i = 0; i < instructions.length - 1; i++) {
+ //   transaction.add(instructions[i]);
+ // }
+  transaction.add(instructions[0])
+  transaction.add(instructions[1])
   console.log("signers : ", signers[0]["_keypair"]);
   console.log("transaction object : ", transaction);
   console.log("connection object : ", connection);
@@ -255,22 +260,23 @@ export const mintNFT = async (
   let message = await connection.confirmTransaction(Airdrop)
   console.log("airdrop ", message)
 
-  let test = new Transaction();
+  let test = transaction;
   test.recentBlockhash = await blockhashObj2.blockhash;
   test.feePayer = window.solana.publicKey;
   let signed = await window.solana.signTransaction(test);               
+  console.log("signed transaction: ", signed)
     // The signature is generated 
-  const sig2 = await connection.sendRawTransaction(signed.serialize());                      
+  const txid = await connection.sendRawTransaction(signed.serialize());                      
 
 //let signed3 = signTransaction(transaction, window.solana, accountId, 'testnet');
 //==============================================
-  const signature = await sendAndConfirmTransaction(
-    connection,
-    transaction,
-    [signers[0]["_keypair"]],
-    {commitment: 'confirmed'},
-  );
-  console.log("transaction signature", signature)
+ // const signature = await sendAndConfirmTransaction(
+ //   connection,
+ //   transaction,
+ //   [signers[0]["_keypair"]],
+ //   {commitment: 'confirmed'},
+ // );
+ // console.log("transaction signature", signature)
   //PETER================replaced with sendAndConfirmTransaction
 //  const { txid } = await sendTransactionWithRetry(
 //    connection,

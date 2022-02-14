@@ -39,21 +39,40 @@ export const toPublicKey = (key) => {
   return result;
 };
 
-export function createUninitializedMint(
+export async function createUninitializedMint(
   instructions,
   payer,
   amount,
   signers,
 ) {
   const account = Keypair.generate();
-  instructions.push(
-    SystemProgram.createAccount({
+  let inx3 = SystemProgram.createAccount({
       fromPubkey: payer,
       newAccountPubkey: account.publicKey,
       lamports: amount,
       space: MintLayout.span,
       programId: TOKEN_PROGRAM_ID,
-    }),
+    });
+  console.log("from pubkey", payer);
+  console.log("new account pubkey", account.publicKey);
+  console.log("lamports", amount);
+  console.log("mint layout", MintLayout.span);
+  console.log("program id : ", inx3.data)
+  console.log("3rd inx : ", inx3)
+
+  let inx4 = new TransactionInstruction({
+    keys: [
+      {payer, true, true},
+      {account.publicKey, true, true},
+    ],
+    programId: new PublicKey('11111111111111111111111111111111')
+    inx3.data,
+  });
+
+  console.log("inx4 : ", inx4)
+
+  instructions.push(
+    inx3,
   );
 
   signers.push(account);
@@ -61,7 +80,7 @@ export function createUninitializedMint(
   return account.publicKey;
 }
 
-export function createMint(
+export async function createMint(
   instructions,
   payer,
   mintRentExempt,
@@ -70,7 +89,8 @@ export function createMint(
   freezeAuthority,
   signers,
 ) {
-  const account = createUninitializedMint(
+  console.log("instructions when createMint is called", instructions)
+  const account = await createUninitializedMint(
     instructions,
     payer,
     mintRentExempt,
